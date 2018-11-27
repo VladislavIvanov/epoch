@@ -713,6 +713,7 @@ call_contract_error_value(_Cfg) ->
     LimitedGas = 1234,
     {{{error, <<"out_of_gas">>}, GasUsed5}, S5} = call_contract(Acc1, RemC, callErrLimitGas, word, {IdC, 7, LimitedGas}, DefaultOpts#{amount := 13, return_gas_used => true}, S4),
     ?assert(GasUsed5 < G),
+    ?assert(GasUsed5 < GasUsed4),
     ct:pal("Bal(Acc1, S4): ~p", [Bal(Acc1, S4)]),
     ct:pal("GasUsed: ~p", [GasUsed5]),
     ?assertEqual(Bal(Acc1, S4) - (F + GasUsed5), Bal(Acc1, S5)),
