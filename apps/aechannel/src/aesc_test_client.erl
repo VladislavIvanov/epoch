@@ -3,7 +3,9 @@
 -export([start_link/1]).
 -export([fake_start/0]).
 -export([key_pair/2,
+         initiator_start/1,
          initiator_start/4,
+         responder_start/1,
          responder_start/4
         ]).
 
@@ -31,8 +33,8 @@
 
 -include_lib("apps/aecontract/src/aecontract.hrl").
 
--define(INITIATOR_AMT, 123).
--define(RESPONDER_AMT, 111).
+-define(INITIATOR_AMT, 50000).
+-define(RESPONDER_AMT, 50000).
 -define(PUSH_AMT, 2).
 -define(CHANNEL_RESERVE, 10).
 
@@ -60,6 +62,10 @@ fake_start() ->
     responder_start(Address, Initiator, Responder, Resp),
     initiator_start(Address, Initiator, Responder, Init).
     
+initiator_start(Address) ->
+    Init = key_pair(?IPRIV_KEY, ?IPUB_KEY),
+    initiator_start(Address, ?IPUB_KEY, ?RPUB_KEY, Init).
+
 initiator_start({ResponderHost, ResponderPort},
                  InitiatorId, ResponderId,
                 Keys) ->
@@ -69,6 +75,10 @@ initiator_start({ResponderHost, ResponderPort},
                  responder => ResponderId,
                  host      => ResponderHost,
                  port      => ResponderPort}).
+
+responder_start(Address) ->
+    Resp = key_pair(?RPRIV_KEY, ?RPUB_KEY),
+    responder_start(Address, ?IPUB_KEY, ?RPUB_KEY, Resp).
 
 responder_start({ResponderHost, ResponderPort},
                  InitiatorId, ResponderId,
@@ -174,6 +184,7 @@ log_start_msg(I, R, Role) ->
 process(#{type := report, tag := Tag, info := Msg0}, #state{role=Role}) ->
     {Action, Msg} =
         case Tag of
+            info when Msg0 =:= {died,normal} -> {"will now", "die"};
             info         -> {"received an info", Msg0};
             on_chain_tx  ->
                 {TxType, _Tx} = aetx:specialize_type(aetx_sign:tx(Msg0)),
