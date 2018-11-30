@@ -89,8 +89,8 @@ generate(Hash, Nonce, Target, N) ->
                                         generate_int(Hash, N1, Target, I)
                                     catch _:_ -> {error, no_solution} end}
           end,
-    Pids = [ begin spawn_link(fun() -> Fun(D) end),
-                   timer:sleep(100) end || D <- lists:seq(0, N - 1) ],
+    Pids = [ begin Pid = spawn_link(fun() -> Fun(D) end),
+                   timer:sleep(200), Pid end || D <- lists:seq(0, N - 1) ],
     Results = [ receive {Pid, Res} -> Res after 10000 -> {error, timeout} end || Pid <- Pids ],
     case [ Ok || {ok, _} = Ok <- Results ] of
         [Ok | _] -> Ok;
