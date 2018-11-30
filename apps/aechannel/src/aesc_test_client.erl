@@ -172,6 +172,7 @@ connect_opts(Role, InitiatorId, ResponderId) ->
       responder        => ResponderId,
       role             => Role,
       lock_period      => 3,
+      minimum_depth    => 0,
       push_amount      => ?PUSH_AMT,
       initiator_amount => ?INITIATOR_AMT,
       responder_amount => ?RESPONDER_AMT,
