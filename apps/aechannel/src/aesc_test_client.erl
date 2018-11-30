@@ -1,7 +1,7 @@
 -module(aesc_test_client).
 
 -export([start_link/1]).
--export([fake_start/0]).
+-export([local_test/0]).
 -export([key_pair/2,
          initiator_start/1,
          initiator_start/4,
@@ -19,7 +19,8 @@
                 status = unopened :: unopened
                                    | opened
                                    | contract_created,
-                calls_left = 10 :: non_neg_integer()
+                test_start_time = not_set :: not_set | non_neg_integer(),
+                calls_left = 1000 :: non_neg_integer()
                }).
 
 
@@ -53,7 +54,7 @@ key_pair(PrivKey, PubKey) ->
     #kpair{pub_key  = PubKey,
            priv_key = PrivKey}.
 
-fake_start() ->
+local_test() ->
     Init = key_pair(?IPRIV_KEY, ?IPUB_KEY),
     Resp = key_pair(?RPRIV_KEY, ?RPUB_KEY),
     Initiator = Init#kpair.pub_key,
@@ -140,13 +141,17 @@ handle_info(create_contract, State) ->
     {noreply, State};
 handle_info(call_contract, #state{calls_left = Left,
                                   fsm        = Fsm,
+                                  test_start_time = Tmst,
                                   role       = Role} = State) when Left < 1 ->
     aesc_fsm:shutdown(Fsm),
+    TimeL = aeu_time:now_in_msecs() - Tmst,
     log_("is done,", "closing with a mutual agreement", Role),
+    log_("took", integer_to_list(TimeL) ++ " ms", Role),
     {noreply, State};
 handle_info(call_contract, State) ->
     call_contract(State),
-    {noreply, State};
+    State1 = set_time_if_needed(State),
+    {noreply, State1};
 handle_info(Info, #state{role = Role} = State) ->
     lager:info("Unhandled ~p info ~p", [Role, Info]),
     {noreply, State}.
@@ -193,11 +198,12 @@ process(#{type := report, tag := Tag, info := Msg0}, #state{role=Role}) ->
                 {TxType, _Tx} = aetx:specialize_type(aetx_sign:tx(Msg0)),
                 {"received a co-signed", TxType}
         end,
-    log_(Action, Msg, Role);
+    pass;
+    %log_(Action, Msg, Role);
 process(#{type := sign, tag := Type, info := Tx}, #state{fsm=Fsm,
                                                          keys=Keys,
                                                          role=Role}) ->
-    log_("asked to sign", Type, Role),
+    %log_("asked to sign", Type, Role),
     SignedTx = sign_tx(Tx, Keys#kpair.priv_key),
     aesc_fsm:signing_response(Fsm, Type, SignedTx);
 process(Msg, #state{role=Role}) ->
@@ -210,8 +216,9 @@ next_state(#{type := report, tag := info, info := open},
         initiator ->
             timer:send_after(1000, create_contract);
         responder ->
-            log_("is waiting for other participant to create",
-                 "a contract", Role)
+            pass
+            %log_("is waiting for other participant to create",
+            %     "a contract", Role)
     end,
     State#state{status = opened};
 next_state(#{type := report, tag := update, info := SignedTx},
@@ -225,8 +232,9 @@ next_state(#{type := report, tag := update, info := SignedTx},
                 initiator ->
                     timer:send_after(0, call_contract);
                 responder ->
-                    log_("is waiting for other participant to call",
-                        "a contract", Role)
+                    pass
+                    %log_("is waiting for other participant to call",
+                    %    "a contract", Role)
             end,
             Round = aesc_offchain_tx:round(Tx),
             Owner = aesc_offchain_update:extract_caller(Update),
@@ -242,14 +250,15 @@ next_state(#{type := report, tag := update, info := SignedTx},
             #state{role=Role, status=contract_created,
                    calls_left=Left} = State) ->
 
-    log_("is waiting for other participant to call a contract",
-         integer_to_list(Left), Role),
+    %log_("is waiting for other participant to call a contract",
+    %     integer_to_list(Left), Role),
     case Role of
         initiator ->
             timer:send_after(0, call_contract);
         responder ->
-            log_("is waiting for other participant to call",
-                "a contract", Role)
+            pass
+            %log_("is waiting for other participant to call",
+            %    "a contract", Role)
     end,
     State#state{calls_left = Left - 1};
 next_state(_, State) -> State.
@@ -288,7 +297,7 @@ create_contract(#state{fsm = Fsm, role = Role}) ->
 
 call_contract(#state{fsm = Fsm, role = Role, contract_id = ContractPubkey,
                      calls_left = Left}) ->
-    log_("is calling a contract", integer_to_list(Left), Role),
+    %log_("is calling a contract", integer_to_list(Left), Role),
     TestName = "counter",
     BinCode = compile_contract(TestName),
     CallData = make_calldata_from_code(BinCode, tick, {}), 
@@ -340,3 +349,6 @@ contract_path() ->
         []        -> error(failed_to_find_contract_dir)
     end.
 
+set_time_if_needed(#state{test_start_time = not_set} = State) ->
+   State#state{test_start_time = aeu_time:now_in_msecs()}; 
+set_time_if_needed(#state{} = State) -> State.
