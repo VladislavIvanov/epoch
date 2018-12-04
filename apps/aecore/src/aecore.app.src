@@ -14,8 +14,6 @@
     crypto,
     setup,
     sext,
-    rocksdb,
-    mnesia_rocksdb,
     parse_trans,
     eper,
     syntax_tools,
