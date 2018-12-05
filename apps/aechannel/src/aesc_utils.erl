@@ -263,6 +263,7 @@ check_force_progress_(PayloadHash, PayloadRound,
           fun() ->
               case aesc_offchain_update:extract_vm_version(Update) of
                   ?AEVM_01_Sophia_01 -> ok;
+                  ?AEVM_02_Sophia_01 -> ok; %% TODO: Dependent on fork height
                   _ -> {error, unknown_vm_version}
               end
           end,

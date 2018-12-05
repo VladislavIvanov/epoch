@@ -35,7 +35,8 @@ run_new(ContractPubKey, Call, CallData, Trees0, OnChainTrees,
     VmVersion = aect_contracts:vm_version(Contract),
     %% Assert VmVersion before running!
     case VmVersion of
-        ?AEVM_01_Sophia_01 -> ok
+        ?AEVM_01_Sophia_01 -> ok;
+        ?AEVM_02_Sophia_01 -> ok
     end,
 
     CallDef = make_call_def(OwnerPubKey, ContractPubKey,
@@ -46,15 +47,12 @@ run_new(ContractPubKey, Call, CallData, Trees0, OnChainTrees,
     case aect_call:return_type(CallRes) of
         ok ->
             Trees1 = aect_utils:insert_call_in_trees(CallRes, Trees),
+            %% Save the initial state (returned by `init`) in the store.
+            InitState  = aect_call:return_value(CallRes),
+            %% TODO: move to/from_sophia_state to make nicer dependencies?
             Contract1 =
-                case VmVersion of
-                    ?AEVM_01_Sophia_01 ->
-                        %% Save the initial state (returned by `init`) in the store.
-                        InitState  = aect_call:return_value(CallRes),
-                        %% TODO: move to/from_sophia_state to make nicer dependencies?
-                        aect_contracts:set_state(
-                          aevm_eeevm_store:from_sophia_state(InitState), Contract)
-                end,
+                aect_contracts:set_state(
+                  aevm_eeevm_store:from_sophia_state(InitState), Contract),
             ContractsTree0 = aec_trees:contracts(Trees1),
             ContractsTree1 = aect_state_tree:enter_contract(Contract1, ContractsTree0),
             aec_trees:set_contracts(Trees1, ContractsTree1);
@@ -69,7 +67,7 @@ run_new(ContractPubKey, Call, CallData, Trees0, OnChainTrees,
           aec_trees:trees(), aetx_env:env()) -> aec_trees:trees().
 run(ContractPubKey, VmVersion, Call, CallData, CallStack, Trees0,
     Amount, GasPrice, Gas, OnChainTrees, OnChainEnv)
-    when VmVersion =:= ?AEVM_01_Sophia_01 ->
+  when VmVersion =:= ?AEVM_01_Sophia_01; VmVersion =:= ?AEVM_02_Sophia_01 ->
     ContractsTree  = aec_trees:contracts(Trees0),
     Contract = aect_state_tree:get_contract(ContractPubKey, ContractsTree),
     OwnerPubKey = aect_contracts:owner_pubkey(Contract),

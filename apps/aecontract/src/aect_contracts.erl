@@ -10,6 +10,8 @@
 %% API
 -export([ deserialize/2
         , store_id/1
+        , is_legal_vm_call/2
+        , is_legal_vm_version/1
         , new/1
         , new/5 %% For use without transaction
         , serialize/1
@@ -42,6 +44,8 @@
 
 %% For testing only.
 -export([set_vm_version/2]).
+
+-include("aecontract.hrl").
 
 -ifdef(TEST).
 -export([internal_set_state/2]).
@@ -93,6 +97,24 @@
 %%%===================================================================
 %%% API
 %%%===================================================================
+
+-spec is_legal_vm_call(FromVMVersion :: non_neg_integer(),
+                       ToVMVersion :: non_neg_integer()) ->
+                          boolean().
+%% NOTE: Keep this up to date if the different sophia vms gets incompatible.
+is_legal_vm_call(X, X) -> true;
+is_legal_vm_call(?AEVM_02_Sophia_01, ?AEVM_01_Sophia_01) -> true;
+is_legal_vm_call(_, _) -> false.
+
+-spec is_legal_vm_version(term()) -> boolean().
+is_legal_vm_version(?AEVM_NO_VM)           -> true;
+is_legal_vm_version(?AEVM_01_Sophia_01)    -> true;
+is_legal_vm_version(?AEVM_01_Solidity_01)  -> true;
+is_legal_vm_version(?FTWVM_01_Sophia_02)   -> true;
+is_legal_vm_version(?HLM_01_Varna_01)      -> true;
+is_legal_vm_version(?FAEVM_01_Solidity_01) -> true;
+is_legal_vm_version(?AEVM_02_Sophia_01)    -> true;
+is_legal_vm_version(_)                     -> false.
 
 -spec store_id(contract()) -> store_id().
 store_id(C) ->
@@ -353,8 +375,11 @@ assert_field(FieldKey, FieldValue, _) ->
 
 assert_field(pubkey, <<_:?PUB_SIZE/binary>> = X)         -> X;
 assert_field(owner,  <<_:?PUB_SIZE/binary>> = X)         -> X;
-assert_field(vm_version, X) when is_integer(X), X > 0,
-                                                X < 6    -> X;
+assert_field(vm_version, X) ->
+    case is_legal_vm_version(X) of
+        true  -> X;
+        false -> error({illegal, vm_version, X})
+    end;
 assert_field(code, X)       when is_binary(X)            -> X;
 assert_field(log, X)        when is_binary(X)            -> X;
 assert_field(active, X)     when X =:= true; X =:= false -> X;

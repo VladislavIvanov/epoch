@@ -4216,7 +4216,7 @@ sc_ws_oracle_contract_(Owner, GetVolley, ConnPid1, ConnPid2,
                       response_format => SophiaStringType,
                       query_fee       => QueryFee,
                       query_ttl       => QueryTTL,
-                      vm_version      => ?AEVM_01_Sophia_01
+                      vm_version      => ?CURRENT_AEVM_SOPHIA
                      }),
     OracleQuerySequence =
         fun(Q0, R0) ->

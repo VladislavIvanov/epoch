@@ -191,7 +191,8 @@ check(#contract_create_tx{nonce      = Nonce,
                  aetx_utils:check_account(OwnerPubKey, Trees, Nonce, RequiredAmount)
          end |
          case VmVersion of
-            ?AEVM_01_Sophia_01 ->
+            _ when VmVersion =:= ?AEVM_01_Sophia_01;
+                   VmVersion =:= ?AEVM_02_Sophia_01 ->
                  [ fun() ->
                            case get_sophia_serialization(Tx) of
                                {ok, #{type_info := TypeInfo}} ->
@@ -366,7 +367,8 @@ initialize_contract(#contract_create_tx{vm_version = VmVersion,
     %% TODO: Move ABI specific code to abi module(s).
     Contract1 =
         case VmVersion of
-            ?AEVM_01_Sophia_01 ->
+            _ when VmVersion =:= ?AEVM_01_Sophia_01;
+                   VmVersion =:= ?AEVM_02_Sophia_01 ->
                 %% Save the initial state (returned by `init`) in the store.
                 InitState  = aect_call:return_value(CallRes),
                 %% TODO: move to/from_sophia_state to make nicer dependencies?
