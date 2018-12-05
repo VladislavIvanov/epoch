@@ -418,7 +418,7 @@ oracle_query_fee(Oracle, #state{trees = ChainTrees}) ->
             Fee = aeo_oracles:query_fee(O),
             {ok, Fee};
         none  ->
-            {ok, none}
+            {error, no_such_oracle}
     end.
 
 oracle_query_format(Oracle, #state{trees = ChainTrees}) ->
