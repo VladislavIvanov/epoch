@@ -1235,7 +1235,7 @@ get_key_blocks_by_hash_sut(Hash) ->
     http_request(Host, get, "key-blocks/hash/" ++ http_uri:encode(Hash), []).
 
 post_key_blocks_sut(KeyBlock) ->
-    post_key_blocks_sut(KeyBlock).
+    post_key_blocks_sut(?NODE, KeyBlock).
 
 post_key_blocks_sut(Node, KeyBlock) ->
     Host = internal_address(Node),
