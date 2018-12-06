@@ -1,7 +1,7 @@
 {"1.1.0",
 [{<<"aecuckooprebuilt">>,
   {git,"https://github.com/aeternity/epoch.git",
-       {ref,"a709db62182403b64d7b0c2e0d9607ffd53c2717"}},
+       {ref,"b1f56a3bd7856d46d1b6ae6d52c9399eb3ef4c45"}},
   0},
  {<<"base58">>,
   {git,"https://github.com/aeternity/erl-base58.git",

@@ -291,6 +291,7 @@ clean:
 
 distclean: clean
 	( cd apps/aecuckoo && $(MAKE) distclean; )
+	( cd apps/aecuckooprebuilt && $(MAKE) distclean; )
 	( cd otp_patches && $(MAKE) distclean; )
 	( cd $(HTTP_APP) && $(MAKE) distclean; )
 	@rm -rf _build/
