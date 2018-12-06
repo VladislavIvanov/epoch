@@ -1,1 +1,3 @@
-# Pre-built Binaries for Cuckoo Cycle Proof of Work
+# aecuckooprebuilt
+
+OTP application containing prebuilt Cuckoo Cycle proof of work executables.
