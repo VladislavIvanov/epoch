@@ -7,7 +7,7 @@ all: priv/bin
 .PHONY: priv/bin
 priv/bin: c_src/.git | priv
 	$(MAKE) clean
-	( cd $(<D) && git archive --format=tar --prefix=$@/ $(COMMIT); ) | pax -r
+	( cd $(<D) && git archive --format=tar --prefix=$@/ $(COMMIT); ) | { pax -r || tar x; }
 
 c_src/.git:
 	git clone -n $(REPO) $(@D)
