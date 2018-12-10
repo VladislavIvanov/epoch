@@ -1,0 +1,15 @@
+{application, rebar_git_deps,
+ [{description, "Plugin enabling importing git repository in wrapper OTP application by specifying git repo as dependency"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {maintainers, []},
+  {licenses, []},
+  {links, []}
+ ]}.
