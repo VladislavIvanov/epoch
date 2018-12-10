@@ -1,5 +1,5 @@
-REPO = https://github.com/aeternity/epoch.git
-COMMIT = 7744a0b28a9faeed8e70315054611b1e67e844fd
+REPO = https://github.com/aeternity/cuckoo-prebuilt.git
+COMMIT = 8cfd053288f518ad0db441a4763e976f6af686d7
 
 .PHONY: all
 all: priv/bin
