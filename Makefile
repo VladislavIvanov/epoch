@@ -4,6 +4,7 @@ COMMIT = 8cfd053288f518ad0db441a4763e976f6af686d7
 .PHONY: all
 all: priv/bin
 
+.PHONY: priv/bin
 priv/bin: c_src/.git | priv
 	$(MAKE) clean
 	( cd $(<D) && git archive --format=tar --prefix=$@/ $(COMMIT); ) | pax -r
